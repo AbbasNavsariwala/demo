@@ -137,7 +137,7 @@ def run(argv=None):
     # full name in the short_to_long_name_map.  The short_to_long_name_map
     # comes from a read from BigQuery in the next few lines
     def add_full_state_name(row, short_to_long_name_map):
-        row['name'] = short_to_long_name_map[row['email']]
+        row['email'] = short_to_long_name_map[row['name']]
         return row
 
     # This is a second source of data.  The source is from BigQuery.
