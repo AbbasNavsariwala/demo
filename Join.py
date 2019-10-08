@@ -185,7 +185,7 @@ def run(argv=None):
                     known_args.output,
                     # Here we use the JSON schema read in from a JSON file.
                     # Specifying the schema allows the API to create the table correctly if it does not yet exist.
-                    schema='name:STRING,job:STRING,address:STRING,email:STRING',
+                    schema=schema,
                     # Creates the table in BigQuery if it does not yet exist.
                     create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED,
                     # Deletes all data in the BigQuery table before writing.
