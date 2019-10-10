@@ -1,20 +1,22 @@
+import os
 import argparse
 import logging
 import re
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 
-class DataIngestion:
+class DataIngestion(object):
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    self.schema_str = ''
-    # This is the schema of the destination table in BigQuery.
-    schema_file = os.path.join(dir_path, 'resources', 'demo_schema.json')
-    with open(schema_file) \
-            as f:
-        data = f.read()
-        # Wrapping the schema in fields is required for the BigQuery API.
-        self.schema_str = '{"fields": ' + data + '}'
+    def __init__(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        self.schema_str = ''
+        # This is the schema of the destination table in BigQuery.
+        schema_file = os.path.join(dir_path, 'resources', 'demo_schema.json')
+        with open(schema_file) \
+                as f:
+            data = f.read()
+            # Wrapping the schema in fields is required for the BigQuery API.
+            self.schema_str = '{"fields": ' + data + '}'
 
     def parse_method(self, string_input):
         # Strip out carriage return, newline and quote characters.
