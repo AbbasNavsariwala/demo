@@ -23,7 +23,7 @@ class DataIngestion():
         values = re.split(",",
                           re.sub('\r\n', '', re.sub(u'"', '', string_input)))
         row = dict(
-            zip(('name', 'job'),
+            zip(('name', 'email'),
                 values))
         return row
 
