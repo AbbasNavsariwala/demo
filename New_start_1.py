@@ -20,8 +20,7 @@ class DataIngestion():
 
     def parse_method(self, string_input):
         # Strip out carriage return, newline and quote characters.
-        values = re.split(",",
-                          re.sub('\r\n', '', re.sub(u'"', '', string_input)))
+        values = string_input.split(",")
         row = list(dict(
             zip(('name', 'job'),
                 values)))
@@ -93,18 +92,30 @@ def run(argv=None):
     source_pipeline_name = 'source_data'
     source_data = (p
                    |'Read from a File' >> beam.io.ReadFromText(known_args.input,skip_header_lines=1)
-                   | 'String To BigQuery Row' >> beam.Map(lambda s: data_ingestion.parse_method(s))
                    )
-    source_data | WriteToText('gs://spikey-dataproc-238820/source_data', '.txt')
+    source_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/source_data', '.txt')
 
     join_pipeline_name = 'join_data'
     read_query = """ SELECT name, job FROM `spikey-dataproc-238820.lake.fake_data`"""
     bq_source = beam.io.BigQuerySource(query=read_query, use_standard_sql=True)
     join_data = (p
                  | "Read From BigQuery" >> beam.io.Read(bq_source)
-                 | "Map the KV" >> beam.Map(lambda s: data_ingestion.parse_method(s))
                  )
-    join_data | WriteToText('gs://spikey-dataproc-238820/join_data', '.txt')
+#     join_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/join_data', '.txt')
+    
+    name_join = (source_data,join_data)|'Join the data' >> beam.CoGroupByKey()
+                | 'Write to File' >> beam.io.textio.WriteToText('gs://data_files/join','.txt')
+                )
+            
+    b = beam.Pipeline(options=pipeline_options)
+    
+    join_pipeline_name = 'join_data'
+    read_query = """ SELECT name, job FROM `spikey-dataproc-238820.lake.fake_data`"""
+    bq_source = beam.io.BigQuerySource(query=read_query, use_standard_sql=True)
+    join_data = (b
+                 | "Read From BigQuery" >> beam.io.Read(bq_source)
+                 )
+    join_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/join_data', '.txt')
 
 #     common_key = 'name'
 
@@ -170,6 +181,8 @@ def run(argv=None):
     result = p.run()
     result.wait_until_finish()
 
+    result = b.run()
+    result.wait_until_finish()
 
 if __name__ == '__main__':
     run()
