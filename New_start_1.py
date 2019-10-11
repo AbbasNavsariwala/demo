@@ -95,6 +95,7 @@ def run(argv=None):
                    |'Read from a File' >> beam.io.ReadFromText(known_args.input,skip_header_lines=1)
                    | 'String To BigQuery Row' >> beam.Map(lambda s: data_ingestion.parse_method(s))
                    )
+    source_data | WriteToText('gs://spikey-dataproc-238820/source_data', '.txt')
 
     join_pipeline_name = 'join_data'
     read_query = """ SELECT name, job FROM `spikey-dataproc-238820.lake.fake_data`"""
@@ -103,27 +104,28 @@ def run(argv=None):
                  | "Read From BigQuery" >> beam.io.Read(bq_source)
                  | "Map the KV" >> beam.Map(lambda s: data_ingestion.parse_method(s))
                  )
+    join_data | WriteToText('gs://spikey-dataproc-238820/join_data', '.txt')
 
-    common_key = 'name'
+#     common_key = 'name'
 
-    pipelines_dictionary = {source_pipeline_name: source_data, join_pipeline_name: join_data}
-    test_pipeline = (pipelines_dictionary
-                     | 'Left join' >> LeftJoin( source_pipeline_name, source_data, join_pipeline_name, join_data, common_key)
-                     # | 'Log Contents' >> beam.ParDo(LogContents())
-                     )
+#     pipelines_dictionary = {source_pipeline_name: source_data, join_pipeline_name: join_data}
+#     test_pipeline = (pipelines_dictionary
+#                      | 'Left join' >> LeftJoin( source_pipeline_name, source_data, join_pipeline_name, join_data, common_key)
+#                      # | 'Log Contents' >> beam.ParDo(LogContents())
+#                      )
 
-    test_pipeline | 'Write to BigQuery' >> beam.io.Write(
-        beam.io.BigQuerySink(
-            # The table name is a required argument for the BigQuery sink.
-            # In this case we use the value passed in from the command line.
-            known_args.output,
-            # Here we use the simplest way of defining a schema:
-            # fieldName:fieldType
-            schema='name:STRING,job:STRING',
-            # Creates the table in BigQuery if it does not yet exist.
-            create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED,
-            # Deletes all data in the BigQuery table before writing.
-            write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE))
+#     test_pipeline | 'Write to BigQuery' >> beam.io.Write(
+#         beam.io.BigQuerySink(
+#             # The table name is a required argument for the BigQuery sink.
+#             # In this case we use the value passed in from the command line.
+#             known_args.output,
+#             # Here we use the simplest way of defining a schema:
+#             # fieldName:fieldType
+#             schema='name:STRING,job:STRING',
+#             # Creates the table in BigQuery if it does not yet exist.
+#             create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED,
+#             # Deletes all data in the BigQuery table before writing.
+#             write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE))
 
 
 
