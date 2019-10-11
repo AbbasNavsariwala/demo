@@ -22,9 +22,9 @@ class DataIngestion():
         # Strip out carriage return, newline and quote characters.
         values = re.split(",",
                           re.sub('\r\n', '', re.sub(u'"', '', string_input)))
-        row = dict(
+        row = list(dict(
             zip(('name', 'job'),
-                values))
+                values)))
         return row
 
 class LeftJoin(beam.PTransform):
@@ -101,7 +101,7 @@ def run(argv=None):
     bq_source = beam.io.BigQuerySource(query=read_query, use_standard_sql=True)
     join_data = (p
                  | "Read From BigQuery" >> beam.io.Read(bq_source)
-                 | "Map the KV" >> beam.Map(lambda s: data_ingestion.parse_method(s)))
+                 | "Map the KV" >> beam.Map(lambda s: data_ingestion.parse_method(s))
                  )
 
     common_key = 'name'
