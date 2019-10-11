@@ -96,27 +96,27 @@ def run(argv=None):
                    )
     source_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/source_data', '.txt')
 
-    join_pipeline_name = 'join_data'
-    read_query = """ SELECT name, job FROM `spikey-dataproc-238820.lake.fake_data`"""
-    bq_source = beam.io.BigQuerySource(query=read_query, use_standard_sql=True)
-    join_data = (p
-                 | "Read From BigQuery" >> beam.io.Read(bq_source)
-                 )
+#     join_pipeline_name = 'join_data'
+#     read_query = """ SELECT name, job FROM `spikey-dataproc-238820.lake.fake_data`"""
+#     bq_source = beam.io.BigQuerySource(query=read_query, use_standard_sql=True)
+#     join_data = (p
+#                  | "Read From BigQuery" >> beam.io.Read(bq_source)
+#                  )
 #     join_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/join_data', '.txt')
     
-    name_join = (({'source_data': source_data, 'join_data': join_data})|'Join the data' >> beam.CoGroupByKey()
-                | 'Write to File' >> beam.io.textio.WriteToText('gs://data_files/join','.txt')
-                )
+#     name_join = (({'source_data': source_data, 'join_data': join_data})|'Join the data' >> beam.CoGroupByKey()
+#                 | 'Write to File' >> beam.io.textio.WriteToText('gs://data_files/join','.txt')
+#                 )
             
-    b = beam.Pipeline(options=pipeline_options)
+#     b = beam.Pipeline(options=pipeline_options)
     
-    join_pipeline_name = 'join_data'
-    read_query = """ SELECT name, job FROM `spikey-dataproc-238820.lake.fake_data`"""
-    bq_source = beam.io.BigQuerySource(query=read_query, use_standard_sql=True)
-    join_data = (b
-                 | "Read From BigQuery" >> beam.io.Read(bq_source)
-                 )
-    join_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/join_data', '.txt')
+#     join_pipeline_name = 'join_data'
+#     read_query = """ SELECT name, job FROM `spikey-dataproc-238820.lake.fake_data`"""
+#     bq_source = beam.io.BigQuerySource(query=read_query, use_standard_sql=True)
+#     join_data = (b
+#                  | "Read From BigQuery" >> beam.io.Read(bq_source)
+#                  )
+#     join_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/join_data', '.txt')
 
 #     common_key = 'name'
 
