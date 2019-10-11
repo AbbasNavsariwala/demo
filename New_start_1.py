@@ -21,9 +21,9 @@ class DataIngestion():
     def parse_method(self, string_input):
         # Strip out carriage return, newline and quote characters.
         values = string_input.split(",")
-        row = list(dict(
+        row = dict(
             zip(('name', 'job'),
-                values)))
+                values))
         return row
 
 class LeftJoin(beam.PTransform):
@@ -92,6 +92,7 @@ def run(argv=None):
     source_pipeline_name = 'source_data'
     source_data = (p
                    |'Read from a File' >> beam.io.ReadFromText(known_args.input,skip_header_lines=1)
+                   | 'String To BigQuery Row' >> beam.Map(lambda s: data_ingestion.parse_method(s))
                    )
     source_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/source_data', '.txt')
 
@@ -103,7 +104,7 @@ def run(argv=None):
                  )
 #     join_data | beam.io.textio.WriteToText('gs://spikey-dataproc-238820/join_data', '.txt')
     
-    name_join = (source_data,join_data)|'Join the data' >> beam.CoGroupByKey()
+    name_join = (({'source_data': source_data, 'join_data': join_data})|'Join the data' >> beam.CoGroupByKey()
                 | 'Write to File' >> beam.io.textio.WriteToText('gs://data_files/join','.txt')
                 )
             
